@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>連続音声認識と音声合成サンプル</title>
+</head>
+<body>
+    <h2>連続音声認識と音声合成サンプル</h2>
+
+    <h3>文字入力</h3>
+    <input type="text" id="textToSpeech" placeholder="テキストを入力">
+    <button id="speak">話す</button>
+
+    <h3>音声入力</h3>
+    <button id="startBtn">音声認識をスタート</button>
+    <button id="stopBtn" disabled>音声認識をストップ</button>
+    <div id="content"></div>
+
+    <script src="speechRecognition.js"></script>
+</body>
+</html>

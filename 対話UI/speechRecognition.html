@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Recognition</title>
+</head>
+<body style="margin: 0; display: flex; flex-direction: column; height: 100vh; background-color: lightblue;">
+
+<div id="conversation" style="flex: 1; overflow-y: auto; padding: 10px; border-bottom: 1px solid #ccc;">
+</div>
+
+<div id="controls" style="display: flex; align-items: center; padding: 10px;">
+    <input type="text" id="textToSpeech" placeholder="メッセージを入力" style="flex: 1; margin-right: 10px;" onkeydown="handleKeyDown(event)">
+    <button id="speak" onclick="sendMessage()">送信</button>
+</div>
+
+<div id="voice-controls" style="display: flex; align-items: center; padding: 10px;">
+    <button id="startBtn">音声入力開始</button>
+    <button id="stopBtn" disabled>音声入力停止</button>
+</div>
+
+<script>
+    const speech = new webkitSpeechRecognition() || new SpeechRecognition();
+    const synth = window.speechSynthesis;
+    speech.lang = 'ja-JP';
+    speech.continuous = true;
+    speech.interimResults = true;
+
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const textToSpeechInput = document.getElementById('textToSpeech');
+    const conversationContainer = document.getElementById('conversation');
+
+    startBtn.addEventListener('click', function () {
+        speech.lang = 'ja-JP';  // 日本語に設定
+        speech.start();
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+    });
+
+    stopBtn.addEventListener('click', function () {
+        speech.stop();
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    });
+
+    speech.onresult = function (event) {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                transcript += event.results[i][0].transcript;
+            }
+        }
+        if (transcript) {
+            // 会話ログに追加
+            addMessageToConversation('other', transcript);
+        }
+    };
+
+    speech.onend = function () {
+        if (!stopBtn.disabled) {
+            speech.start();
+        }
+    };
+
+    function sendMessage() {
+        var text = textToSpeechInput.value;
+        if (text) {
+            // 会話ログに追加
+            addMessageToConversation('user', text);
+
+            // 音声合成
+            var utterance = new SpeechSynthesisUtterance(text);
+            synth.speak(utterance);
+
+            // 入力欄をクリア
+            textToSpeechInput.value = '';
+        }
+    }
+
+    function handleKeyDown(event) {
+        // Enterキーが押されたらメッセージを送信
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    // 会話ログにメッセージを追加する関数
+    function addMessageToConversation(sender, message) {
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('message-container');
+        messageContainer.style.justifyContent = sender === 'user' ? 'flex-end' : 'flex-start';
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+        messageDiv.classList.add(sender === 'user' ? 'user' : 'other');
+        messageDiv.textContent = message;
+
+        messageContainer.appendChild(messageDiv);
+        conversationContainer.appendChild(messageContainer);
+
+        // 会話ログを一番下にスクロール
+        conversationContainer.scrollTop = conversationContainer.scrollHeight;
+    }
+</script>
+
+<style>
+    .message-container {
+        display: flex;
+        margin: 5px;
+    }
+
+    .message {
+        padding: 10px;
+        border-radius: 8px;
+        max-width: 70%;
+    }
+
+    .user {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .other {
+        background-color: #f2f2f2;
+        color: black;
+    }
+
+    #controls {
+        margin-top: 20px;
+    }
+</style>
+
+</body>
+</html>
