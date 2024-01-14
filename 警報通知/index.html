@@ -3,19 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <title>連続音声認識と音声合成サンプル</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .container {
+            display: flex;
+        }
+        .content {
+            flex: 1;
+        }
+        .chart-container {
+            flex: 0 0 20%;
+        }
+        #chart {
+            width: 100%;
+            height: 500px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .content, .chart-container {
+                flex: none;
+                width: 100%;
+            }
+            #chart {
+                height: 300px;
+            }
+        }
+        .alert-message {
+            color: red; /* テキストを赤色に */
+            font-weight: bold; /* テキストを太字に */
+            font-size: 1.5em; /* テキストのサイズを大きく */
+}
+
+    </style>
 </head>
 <body>
-    <h2>連続音声認識と音声合成サンプル</h2>
+    <div class="container">
+        <div class="content">
+            <h2>連続音声認識と音声合成サンプル</h2>
+            <h3>文字入力</h3>
+            <input type="text" id="textToSpeech" placeholder="テキストを入力">
+            <button id="speak">話す</button>
 
-    <h3>文字入力</h3>
-    <input type="text" id="textToSpeech" placeholder="テキストを入力">
-    <button id="speak">話す</button>
-
-    <h3>音声入力</h3>
-    <button id="startBtn">音声認識をスタート</button>
-    <button id="stopBtn" disabled>音声認識をストップ</button>
-    <div id="content"></div>
-
+            <h3>音声入力</h3>
+            <button id="startBtn">音声認識をスタート</button>
+            <button id="stopBtn" disabled>音声認識をストップ</button>
+            <div id="content"></div>
+        </div>
+        <div class="chart-container">
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
     <script src="speechRecognition.js"></script>
 </body>
 </html>
