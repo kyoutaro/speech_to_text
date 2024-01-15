@@ -17,27 +17,26 @@
             flex: 0 0 20%;
         }
         #chart {
-            width: 100%;
-            height: 500px;
-        }
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            .content, .chart-container {
-                flex: none;
-                width: 100%;
-            }
-            #chart {
-                height: 300px;
-            }
+            width: 20%;
+            height: 50px;
         }
         .alert-message {
             color: red; /* テキストを赤色に */
             font-weight: bold; /* テキストを太字に */
             font-size: 1.5em; /* テキストのサイズを大きく */
-}
+        }  
+        .chart-container {
+                position: fixed;
+                right: 10px; /* 右端からの距離 */
+                top: 10px; /* 上端からの距離 */
+                width: 400px; /* グラフの幅 */
+                height: 400px; /* グラフの高さ */
+            }
 
+            #myChart {
+                width: 100%;
+                height: 100%;
+            }
     </style>
 </head>
 <body>
