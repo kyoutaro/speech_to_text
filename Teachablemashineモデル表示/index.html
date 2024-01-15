@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Teachable Machine 音声モデルとチャート</title>
+    <!-- TensorFlow.jsの読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <!-- Speech Commandsモデルの読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js"></script>
+    <!-- Chart.jsの読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: fixed;
+            right: 10px; /* 右端からの距離 */
+            top: 10px; /* 上端からの距離 */
+            width: 200; /* グラフの幅 */
+            height: 200; /* グラフの高さ */
+        }
+    
+        #myChart {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    
+    
+    </head>
+    <body>
+        <div class="container">
+            <div>
+                <div>Teachable Machine Audio Model</div>
+                <button type="button" onclick="init()">Start</button>
+                <div id="label-container"></div>
+            </div>
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
+            </div>            
+        </div>
+        <script type="text/javascript">
+            const URL = "https://teachablemachine.withgoogle.com/models/v41i_P2fV/";
+            let myChart;
+    
+            async function createModel() {
+                const checkpointURL = URL + "model.json";
+                const metadataURL = URL + "metadata.json";
+                const recognizer = speechCommands.create("BROWSER_FFT", undefined, checkpointURL, metadataURL);
+                await recognizer.ensureModelLoaded();
+                return recognizer;
+            }
+    
+            async function init() {
+                const recognizer = await createModel();
+                const classLabels = recognizer.wordLabels();
+                const labelContainer = document.getElementById("label-container");
+                for (let i = 0; i < classLabels.length; i++) {
+                    labelContainer.appendChild(document.createElement("div"));
+                }
+    
+                const ctx = document.getElementById('myChart').getContext('2d');
+                myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: classLabels,
+                        datasets: [{
+                            label: '確率',
+                            data: [],
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+    
+                recognizer.listen(result => {
+                    const scores = result.scores;
+                    for (let i = 0; i < classLabels.length; i++) {
+                        const classPrediction = classLabels[i] + ": " + scores[i].toFixed(2);
+                        labelContainer.childNodes[i].innerHTML = classPrediction;
+                    }
+                    myChart.data.datasets[0].data = scores;
+                    myChart.update();
+                }, {
+                    includeSpectrogram: true,
+                    probabilityThreshold: 0.75,
+                    invokeCallbackOnNoiseAndUnknown: true,
+                    overlapFactor: 0.50
+                });
+            }
+        </script>
+    </body>
+    </html>
