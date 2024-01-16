@@ -15,6 +15,53 @@ let chart;
 let classLabels;
 let model, microphoneStream;
 
+async function createModel() {
+    const checkpointURL = URL + "model.json"; // model topology
+    const metadataURL = URL + "metadata.json"; // model metadata
+
+    const recognizer = speechCommands.create(
+        "BROWSER_FFT", // fourier transform type, not useful to change
+        undefined, // speech commands vocabulary feature, not useful for your models
+        checkpointURL,
+        metadataURL);
+
+    // check that model and metadata are loaded via HTTPS requests.
+    await recognizer.ensureModelLoaded();
+
+    return recognizer;
+}
+
+async function init() {
+    const recognizer = await createModel();
+    const classLabels = recognizer.wordLabels(); // get class labels
+    const labelContainer = document.getElementById("label-container");
+    for (let i = 0; i < classLabels.length; i++) {
+        labelContainer.appendChild(document.createElement("div"));
+    }
+
+    // listen() takes two arguments:
+    // 1. A callback function that is invoked anytime a word is recognized.
+    // 2. A configuration object with adjustable fields
+    recognizer.listen(result => {
+        const scores = result.scores; // probability of prediction for each class
+        // render the probability scores per class
+        for (let i = 0; i < classLabels.length; i++) {
+            const classPrediction = classLabels[i] + ": " + result.scores[i].toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
+    }, {
+        includeSpectrogram: true, // in case listen should return result.spectrogram
+        probabilityThreshold: 0.75,
+        invokeCallbackOnNoiseAndUnknown: true,
+        overlapFactor: 0.50 // probably want between 0.5 and 0.75. More info in README
+    });
+
+    // Stop the recognition in 5 seconds.
+    // setTimeout(() => recognizer.stopListening(), 5000);
+}
+
+
+
 async function loadModel() {
     model = await tmAudio.load(modelURL);
     startListening();
@@ -36,16 +83,6 @@ function handlePredictions(predictions) {
         }
     });
     updateChart(predictions);
-}
-
-function updateChart(predictions) {
-    const labels = predictions.map(p => p.className);
-    const data = predictions.map(p => p.probability);
-    chart.data.labels = labels;
-    chart.data.datasets.forEach((dataset, index) => {
-        dataset.data = [data[index]];
-    });
-    chart.update();
 }
 
 
@@ -70,8 +107,6 @@ function checkSound(transcript) {
         content.innerHTML = '<p class="alert-message">警報が鳴っています。避難してください</p>' + content.innerHTML;
     }
 }
-
-
 
 speech.onresult = function(event) {
     let transcript = '';
@@ -102,38 +137,3 @@ speakButton.addEventListener('click', () => {
 });
 
 loadModel();
-
-function createChart() {
-const ctx = document.getElementById('chart').getContext('2d');
-chart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: [], // 最初は空のラベルで初期化
-        datasets: [{
-            label: '確信度',
-            data: [], // 最初は空のデータで初期化
-            backgroundColor: 'rgba(0, 123, 255, 0.5)',
-            borderColor: 'rgba(0, 123, 255, 1)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
-    }
-});
-}
-
-function updateChart(predictions) {
-    chart.data.labels = predictions.map(p => p.className);
-    chart.data.datasets.forEach((dataset, index) => {
-    dataset.data = [predictions[index].probability];
-    });
-    chart.update();
-    }
-    
-    // モデルのロードとチャートの初期化
-    loadModel().then(createChart);
