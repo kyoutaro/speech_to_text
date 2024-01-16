@@ -9,7 +9,6 @@ const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const content = document.getElementById('content');
 
-const modelURL = 'https://teachablemachine.withgoogle.com/models/v41i_P2fV/';
 
 let chart;
 let classLabels;
@@ -57,7 +56,7 @@ async function init() {
 
 
 async function loadModel() {
-    model = await tmAudio.load(modelURL);
+    model = await tmAudio.load(URL);
     startListening();
 }
 
@@ -69,7 +68,7 @@ async function startListening() {
 // Teachable Machineの警報1の確率が0.8を超えた場合にアラートを表示
 function handlePredictions(predictions) {
     predictions.forEach(prediction => {
-        if (prediction.className === '警報1' && prediction.probability > 0.8) {
+        if (prediction.className === '火災警報1' && prediction.probability > 0.8) {
             onAlarmDetected();
         }
     });
