@@ -15,42 +15,35 @@
         }
         .chart-container {
             flex: 0 0 20%;
+            position: fixed;
+            right: 10px; /* 右端からの距離 */
+            top: 10px; /* 上端からの距離 */
+            width: 400px; /* グラフの幅 */
+            height: 400px; /* グラフの高さ */
         }
         #chart {
-            width: 20%;
-            height: 50px;
+            width: 100%;
+            height: 100%;
         }
         .alert-message {
             color: red; /* テキストを赤色に */
             font-weight: bold; /* テキストを太字に */
             font-size: 1.5em; /* テキストのサイズを大きく */
         }  
-        .chart-container {
-                position: fixed;
-                right: 10px; /* 右端からの距離 */
-                top: 10px; /* 上端からの距離 */
-                width: 400px; /* グラフの幅 */
-                height: 400px; /* グラフの高さ */
-            }
-
-            #myChart {
-                width: 100%;
-                height: 100%;
-            }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="content">
             <h2>連続音声認識と音声合成サンプル</h2>
-            <button type="button" onclick="init()">Start</button>
-            <div id="label-container"></div>
+            <!-- <button type="button" onclick="init()">Start</button> -->
+            <div id="label-container"></div> <!-- Teachable Machineの結果を表示するコンテナ -->
             <h3>文字入力</h3>
             <input type="text" id="textToSpeech" placeholder="テキストを入力">
             <button id="speak">話す</button>
 
             <h3>音声入力</h3>
-            <button id="startBtn">音声認識をスタート</button>
+            <button id="startBtn" onclick="init()">音声認識をスタート</button>
             <button id="stopBtn" disabled>音声認識をストップ</button>
             <div id="content"></div>
         </div>
