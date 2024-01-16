@@ -9,61 +9,54 @@ const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const content = document.getElementById('content');
 
-const modelURL = 'https://teachablemachine.withgoogle.com/models/v41i_P2fV/';
 
 let chart;
 let classLabels;
 let model, microphoneStream;
+
+const URL = "https://teachablemachine.withgoogle.com/models/v41i_P2fV/"; // Teachable MachineモデルのURL
 
 async function createModel() {
     const checkpointURL = URL + "model.json"; // model topology
     const metadataURL = URL + "metadata.json"; // model metadata
 
     const recognizer = speechCommands.create(
-        "BROWSER_FFT", // fourier transform type, not useful to change
-        undefined, // speech commands vocabulary feature, not useful for your models
+        "BROWSER_FFT", // fourier transform type
+        undefined, // vocabulary feature
         checkpointURL,
         metadataURL);
 
-    // check that model and metadata are loaded via HTTPS requests.
     await recognizer.ensureModelLoaded();
-
     return recognizer;
 }
 
 async function init() {
     const recognizer = await createModel();
-    const classLabels = recognizer.wordLabels(); // get class labels
+    const classLabels = recognizer.wordLabels(); // クラスラベルを取得
     const labelContainer = document.getElementById("label-container");
     for (let i = 0; i < classLabels.length; i++) {
         labelContainer.appendChild(document.createElement("div"));
     }
 
-    // listen() takes two arguments:
-    // 1. A callback function that is invoked anytime a word is recognized.
-    // 2. A configuration object with adjustable fields
     recognizer.listen(result => {
-        const scores = result.scores; // probability of prediction for each class
-        // render the probability scores per class
+        const scores = result.scores; // 各クラスの確率
         for (let i = 0; i < classLabels.length; i++) {
-            const classPrediction = classLabels[i] + ": " + result.scores[i].toFixed(2);
+            const classPrediction = classLabels[i] + ": " + (scores[i] * 100).toFixed(2) + "%"; // 確率をパーセンテージで表示
             labelContainer.childNodes[i].innerHTML = classPrediction;
         }
     }, {
-        includeSpectrogram: true, // in case listen should return result.spectrogram
+        includeSpectrogram: true,
         probabilityThreshold: 0.75,
         invokeCallbackOnNoiseAndUnknown: true,
-        overlapFactor: 0.50 // probably want between 0.5 and 0.75. More info in README
+        overlapFactor: 0.50
     });
-
-    // Stop the recognition in 5 seconds.
-    // setTimeout(() => recognizer.stopListening(), 5000);
 }
 
 
 
+
 async function loadModel() {
-    model = await tmAudio.load(modelURL);
+    model = await tmAudio.load(URL);
     startListening();
 }
 
@@ -72,10 +65,7 @@ async function startListening() {
     model.listen(result => { handlePredictions(result); }, { probabilityThreshold: 0.75 });
 }
 
-function onAlarmDetected() {
-    content.innerHTML = '<p>警報が鳴っています。避難してください</p>' + content.innerHTML;
-}
-
+// Teachable Machineの警報1の確率が0.8を超えた場合にアラートを表示
 function handlePredictions(predictions) {
     predictions.forEach(prediction => {
         if (prediction.className === '火災警報1' && prediction.probability > 0.8) {
@@ -84,6 +74,13 @@ function handlePredictions(predictions) {
     });
     updateChart(predictions);
 }
+
+function onAlarmDetected() {
+    content.innerHTML = '<p>警報が鳴っています。</p>' + content.innerHTML;
+}
+
+// 他の関数やイベントハンドラーは変更せずにそのまま使用
+
 
 
 startBtn.addEventListener('click', function() {
